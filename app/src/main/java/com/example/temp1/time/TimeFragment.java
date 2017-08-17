@@ -10,14 +10,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.Spinner;
+
+
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -29,8 +29,11 @@ public class TimeFragment extends Fragment{
     private Time mTime;
 
 
+
     TextView txtTimer;
-    Button btnSingle;
+    Button btnStart;
+    Button btnStop;
+
 
     long StartTime,timeInMilliseconds,TimeBuff,UpdateTime =0L;
     Handler handler;
@@ -54,9 +57,16 @@ public class TimeFragment extends Fragment{
         View v = inflater.inflate(R.layout.fragment_time, container, false);
 
 
+
+
+
         txtTimer = (TextView) v.findViewById(R.id.Timer_Value);
-        btnSingle = (Button)v.findViewById(R.id.btnSingle);
-        listView = (ListView) v.findViewById(R.id.time_container); //this is new
+        btnStart = (Button)v.findViewById(R.id.btnStart);
+        btnStop = (Button)v.findViewById(R.id.btnStop);
+
+        listView = (ListView) v.findViewById(R.id.time_container);
+
+
         handler = new Handler();
         ListElementsArrayList = new ArrayList<String>(Arrays.asList(ListElements));
         adapter = new ArrayAdapter<String>(getActivity().getBaseContext(),
@@ -64,28 +74,43 @@ public class TimeFragment extends Fragment{
                 ListElementsArrayList
         );
         listView.setAdapter(adapter);
-        btnSingle.setOnClickListener(new View.OnClickListener() {
+        btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//change button color, text, and start/stop timer.
-                if (btnSingle.getText()=="Pause")  {
-                    btnSingle.setText("Start");
-                    TimeBuff+=timeInMilliseconds;
 
-                    ListElementsArrayList.add(txtTimer.getText().toString());
-                    adapter.notifyDataSetChanged();
+                btnStart.setVisibility( View.GONE );
+                btnStop.setVisibility( View.VISIBLE );
+                StartTime = SystemClock.uptimeMillis();
+                handler.postDelayed(updateTimerThread, 0);
 
-                    handler.removeCallbacks(updateTimerThread);
-                    btnSingle.setBackgroundDrawable(getResources().getDrawable(R.drawable.button_style_green));
-                } else {
-                    StartTime = SystemClock.uptimeMillis();
-                    handler.postDelayed(updateTimerThread, 0);
-                    btnSingle.setText("Pause");
-                    adapter.notifyDataSetChanged();
-                    btnSingle.setBackgroundDrawable(getResources().getDrawable(R.drawable.button_style_red));
+
                 }
-            }
         });
+
+                btnStop.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        btnStop.setVisibility( View.GONE );
+                        btnStart.setVisibility( View.VISIBLE );
+
+                        TimeBuff += timeInMilliseconds;
+                        setListViewHeightBasedOnChildren(listView);
+
+                        handler.removeCallbacks(updateTimerThread);
+                        ListElementsArrayList.add(txtTimer.getText().toString());
+
+                            adapter.notifyDataSetChanged();
+
+
+
+
+
+
+                    }
+                });
+
+
+
 
 
 
@@ -95,6 +120,26 @@ public class TimeFragment extends Fragment{
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle("Time");
+    }
+    public static void setListViewHeightBasedOnChildren(ListView listView) {
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null)
+            return;
+
+        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
+        int totalHeight = 0;
+        View view = null;
+        for (int i = 0; i < listAdapter.getCount(); i++) {
+            view = listAdapter.getView(i, view, listView);
+            if (i == 0)
+                view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+            view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+            totalHeight += view.getMeasuredHeight();
+        }
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+        listView.setLayoutParams(params);
     }
 
     public  Runnable updateTimerThread = new Runnable() {
