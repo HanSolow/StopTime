@@ -74,6 +74,10 @@ public class TimeFragment extends Fragment{
                 ListElementsArrayList
         );
         listView.setAdapter(adapter);
+        
+        
+        
+        
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -87,7 +91,7 @@ public class TimeFragment extends Fragment{
                 }
         });
 
-                btnStop.setOnClickListener(new View.OnClickListener() {
+       btnStop.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         btnStop.setVisibility( View.GONE );
@@ -100,11 +104,6 @@ public class TimeFragment extends Fragment{
                         ListElementsArrayList.add(txtTimer.getText().toString());
 
                             adapter.notifyDataSetChanged();
-
-
-
-
-
 
                     }
                 });
